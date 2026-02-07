@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}API Documentation{% endblock %}
+{% block content %}
+<h4 class="mb-4">API Documentation</h4>
+<p class="text-secondary mb-4">Use this base URL in your loader: <code>{{ api_base }}</code></p>
+
+<div class="card mb-4">
+    <div class="card-header">POST {{ api_base }}/api.php вЂ” Auth</div>
+    <div class="card-body">
+        <p>Authenticate user. Returns <code>success</code>, <code>message</code>, and <code>user</code> (with <code>download_url</code> for DLL).</p>
+        <p><strong>Content-Type:</strong> <code>application/x-www-form-urlencoded</code></p>
+        <p><strong>Parameters (one of two options):</strong></p>
+        <ul>
+            <li><strong>Option 1:</strong> <code>login</code> (string), <code>password</code> (string), <code>data</code> (optional, e.g. <code>uncracked</code>)</li>
+            <li><strong>Option 2 (HWID):</strong> <code>login</code> (string), <code>hwid</code> (string) вЂ” no password. Admin must set HWID for the user in Users в†’ Set HWID.</li>
+        </ul>
+        <p><strong>Success response (200):</strong></p>
+        <pre class="bg-dark p-3 rounded"><code>{
+  "success": true,
+  "message": "Authorization success",
+  "user": {
+    "id": 1,
+    "username": "user1",
+    "secondary_group_ids": [6],
+    "subscription_expires": "2025-12-31 23:59:59",
+    "download_url": "{{ base_url }}/api/download?token=...",
+    "hwid_set": true
+  }
+}</code></pre>
+        <p><code>hwid_set</code> is <code>true</code> if the user already has HWID bound on the server. Loader should send <code>login</code>+<code>password</code>+<code>hwid</code> when <code>hwid_set</code> is false to register the machine.</p>
+        <p><strong>Error response (200, success: false):</strong></p>
+        <pre class="bg-dark p-3 rounded"><code>{
+  "success": false,
+  "message": "Invalid credentials",
+  "user": null
+}</code></pre>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">GET {{ api_base }}/download вЂ” Download DLL</div>
+    <div class="card-body">
+        <p>Download the active DLL. Use the <code>download_url</code> from the auth response (contains a short-lived token).</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>token</code> (required) вЂ” from <code>user.download_url</code> after auth</li>
+            <li><code>pid</code> (optional) вЂ” CS:GO process ID, for logging</li>
+        </ul>
+        <p><strong>Success:</strong> Binary DLL file (<code>Content-Type: application/octet-stream</code>).</p>
+        <p><strong>Error:</strong> 403 JSON <code>{"success": false, "message": "Forbidden"}</code> or 404 if no DLL.</p>
+        <p class="text-secondary small">Loader should send User-Agent containing <code>inject</code> for logging. Request is logged in Injections.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Summary for loader</div>
+    <div class="card-body">
+        <ol>
+            <li>Set API URL to <code>{{ api_base }}/api.php</code>.</li>
+            <li>Auth: POST <code>login</code> + <code>password</code> (or <code>login</code> + <code>hwid</code>).</li>
+            <li>From response take <code>user.download_url</code> and GET it to download the DLL.</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
