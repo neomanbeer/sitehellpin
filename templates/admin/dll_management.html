@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}DLL Management{% endblock %}
+{% block content %}
+<h4 class="mb-4">DLL Management</h4>
+{% if is_full_admin %}
+<div class="card mb-4">
+    <div class="card-header border-secondary">Upload new version</div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="upload">
+            <div class="row g-2">
+                <div class="col-md-2"><input type="text" name="version" class="form-control" placeholder="Version (e.g. 1.0.0)" required></div>
+                <div class="col-md-4"><input type="file" name="dll_file" class="form-control" accept=".dll" required></div>
+                <div class="col-md-4"><input type="text" name="description" class="form-control" placeholder="Description"></div>
+                <div class="col-md-2"><button type="submit" class="btn btn-primary">Upload</button></div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Version</th><th>Size</th><th>MD5</th><th>Status</th><th>Uploaded</th><th>By</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for d in list_dll %}
+            <tr>
+                <td>{{ d.version }}</td>
+                <td>{{ "{:,}".format(d.file_size) }} B</td>
+                <td><code>{{ d.md5_hash }}</code></td>
+                <td>{% if d.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Off</span>{% endif %}</td>
+                <td>{{ d.uploaded_at }}</td>
+                <td>{{ uploaders.get(d.uploaded_by, '—') }}</td>
+                <td>
+                    {% if is_full_admin %}
+                    <form method="post" class="d-inline"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="{{ d.id }}"><button type="submit" class="btn btn-sm btn-outline-secondary">{{ 'Off' if d.is_active else 'On' }}</button></form>
+                    <a href="{{ url_for('admin.dll_download', dll_id=d.id) }}" class="btn btn-sm btn-outline-secondary">Download</a>
+                    <form method="post" class="d-inline" onsubmit="return confirm('Delete this version?');"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ d.id }}"><button type="submit" class="btn btn-sm btn-danger">Delete</button></form>
+                    {% else %}
+                    <a href="{{ url_for('admin.dll_download', dll_id=d.id) }}" class="btn btn-sm btn-outline-secondary">Download</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not list_dll %}<tr><td colspan="7">No DLLs uploaded</td></tr>{% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

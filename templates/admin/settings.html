@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h4 class="mb-4">Settings</h4>
+<div class="card mb-4">
+    <div class="card-header border-secondary">System</div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="sub" value="settings">
+            <div class="mb-3">
+                <label class="form-label">DLL download URL (hint for loader)</label>
+                <input type="url" name="dll_download_url" class="form-control" value="{{ dll_download_url }}" placeholder="https://yoursite.com/api/download">
+                <small class="text-secondary">After login the API returns download_url with token. Use that in the loader.</small>
+            </div>
+            <div class="row g-2">
+                <div class="col-md-4"><label class="form-label">Max login attempts (admin)</label><input type="number" name="admin_max_login_attempts" class="form-control" value="{{ admin_max_login_attempts }}" min="3" max="20"></div>
+                <div class="col-md-4"><label class="form-label">Lockout (minutes)</label><input type="number" name="admin_lockout_minutes" class="form-control" value="{{ admin_lockout_minutes }}" min="1"></div>
+                <div class="col-md-4"><label class="form-label">Session lifetime (sec)</label><input type="number" name="session_lifetime" class="form-control" value="{{ session_lifetime }}" min="300"></div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Save</button>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header border-secondary">Change password</div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="sub" value="password">
+            <div class="mb-2"><label class="form-label">Current password</label><input type="password" name="current_password" class="form-control" required></div>
+            <div class="mb-2"><label class="form-label">New password</label><input type="password" name="new_password" class="form-control" minlength="6" required></div>
+            <div class="mb-2"><label class="form-label">Confirm</label><input type="password" name="confirm_password" class="form-control" required></div>
+            <button type="submit" class="btn btn-primary">Change password</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

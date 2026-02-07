@@ -1,0 +1,9 @@
+<?php
+/**
+ * Copy this file to database.local.php and fill in your MySQL credentials
+ */
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'loader_site');
+define('DB_USER', 'root');
+define('DB_PASS', 'your_password');
+define('DB_CHARSET', 'utf8mb4');

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h4 class="mb-4">Dashboard</h4>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3"><h6 class="text-secondary">Users</h6><h3>{{ users_total }}</h3></div></div>
+    <div class="col-md-3"><div class="card p-3"><h6 class="text-secondary">Active subscriptions</h6><h3>{{ active_subs }}</h3></div></div>
+    <div class="col-md-3"><div class="card p-3"><h6 class="text-secondary">Banned</h6><h3>{{ users_banned }}</h3></div></div>
+    <div class="col-md-3"><div class="card p-3"><h6 class="text-secondary">Injections (30d)</h6><h3>{{ injections_month }}</h3></div></div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="text-secondary mb-3">Injections by day (14 days)</h6>
+            <canvas id="chartInjections" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="text-secondary mb-3">Top 10 by injections</h6>
+            <ul class="list-group list-group-flush bg-transparent">
+                {% for u in top_users %}
+                <li class="list-group-item d-flex justify-content-between bg-transparent border-secondary">
+                    <a href="{{ url_for('admin.users', search=u.username) }}" class="text-decoration-none">{{ u.username }}</a>
+                    <span class="badge bg-primary">{{ u.cnt }}</span>
+                </li>
+                {% endfor %}
+                {% if not top_users %}<li class="list-group-item bg-transparent border-secondary">No data</li>{% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="text-secondary mb-3">Last injections</h6>
+            <div class="table-responsive"><table class="table table-sm">
+                <thead><tr><th>User</th><th>IP</th><th>Time</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for r in last_injections %}
+                <tr>
+                    <td><a href="{{ url_for('admin.injection_details', log_id=r.id) }}">{{ r.username }}</a></td>
+                    <td>{{ r.ip_address }}</td>
+                    <td>{{ r.injection_time }}</td>
+                    <td><span class="badge {% if r.status == 'success' %}bg-success{% elif r.status == 'blocked' %}bg-danger{% else %}bg-warning{% endif %}">{{ r.status }}</span></td>
+                </tr>
+                {% endfor %}
+                {% if not last_injections %}<tr><td colspan="4">No data</td></tr>{% endif %}
+                </tbody>
+            </table></div>
+            <a href="{{ url_for('admin.injections') }}" class="btn btn-sm btn-outline-secondary">All injections</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="text-secondary mb-3">Last admin actions</h6>
+            <div class="table-responsive"><table class="table table-sm">
+                <thead><tr><th>Action</th><th>Admin</th><th>Time</th></tr></thead>
+                <tbody>
+                {% for log, admin_name in last_logs %}
+                <tr>
+                    <td>{{ log.action_type }}</td>
+                    <td>{{ admin_name or '-' }}</td>
+                    <td>{{ log.created_at }}</td>
+                </tr>
+                {% endfor %}
+                {% if not last_logs %}<tr><td colspan="3">No data</td></tr>{% endif %}
+                </tbody>
+            </table></div>
+            <a href="{{ url_for('admin.system_logs') }}" class="btn btn-sm btn-outline-secondary">All logs</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+var ctx = document.getElementById("chartInjections");
+if (ctx) {
+  new Chart(ctx.getContext("2d"), {
+    type: "line",
+    data: {
+      labels: {{ chart_labels | tojson }},
+      datasets: [{ label: "Injections", data: {{ chart_values | tojson }}, borderColor: "#58a6ff", tension: 0.3 }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+</script>
+{% endblock %}

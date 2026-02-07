@@ -1,0 +1,24 @@
+# Render.com Blueprint - https://render.com/docs/blueprint-spec
+# Free tier: Web Service + PostgreSQL (free 90 days)
+databases:
+  - name: loader-db
+    databaseName: loader_site
+    user: loader_site
+    plan: free
+
+services:
+  - type: web
+    name: loader-site
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: loader-db
+          property: connectionString
